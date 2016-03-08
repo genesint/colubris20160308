@@ -1,0 +1,43 @@
+<?php
+
+function csm_menu()
+{
+    $query = "select nid from node where type='menu'";
+    $records = db_query($query);
+    $items = array();
+    $page_arguments = array();
+    foreach ($records as $record) {
+        $node = node_load($record->nid);
+        if (!empty($node->field_page_arguments['und'])) {
+            $page_arguments = explode(",", $node->field_page_arguments['und'][0]['value']);
+        }
+        $items[$node->field_url['und'][0]['value']] = array(
+            'title' => $node->title,
+            'access callback' => TRUE,
+            'page callback' => $node->field_page_callback['und'][0]['value'],
+            'page arguments' => $page_arguments,
+            'file' => $node->field_file['und'][0]['value'],
+        );
+    }
+    return $items;
+}
+function csm_theme()
+{
+    return array(
+        'product-view' => array(
+            'template' => 'product-view',
+            'variables' => array('title' => '', 'contents' => array())
+        ),
+    );
+}
+
+function colubris_menu_alter(&$items) {
+    // Removing certain local navigation tabs that are either undesired or need to be custom relocated.
+
+    // Set these tabs to MENU_CALLBACK, so they still register the path, but just don't show the tab:
+    $items['node/%node/edit']['type'] = MENU_CALLBACK;
+    $items['node/%node/moderation']['type'] = MENU_CALLBACK;
+    $items['node/%node']['type'] = MENU_CALLBACK;
+
+
+}

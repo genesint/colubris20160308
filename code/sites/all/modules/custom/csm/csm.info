@@ -1,0 +1,6 @@
+name = csm
+description = Support module for Colubris
+package = RADIUS
+
+files[] = csm.module
+core = 7.x
