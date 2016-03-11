@@ -1,43 +1,107 @@
 <?php
 
-function csm_menu()
-{
-    $query = "select nid from node where type='menu'";
-    $records = db_query($query);
-    $items = array();
-    $page_arguments = array();
-    foreach ($records as $record) {
-        $node = node_load($record->nid);
-        if (!empty($node->field_page_arguments['und'])) {
-            $page_arguments = explode(",", $node->field_page_arguments['und'][0]['value']);
-        }
-        $items[$node->field_url['und'][0]['value']] = array(
-            'title' => $node->title,
-            'access callback' => TRUE,
-            'page callback' => $node->field_page_callback['und'][0]['value'],
-            'page arguments' => $page_arguments,
-            'file' => $node->field_file['und'][0]['value'],
-        );
-    }
-    return $items;
-}
-function csm_theme()
-{
-    return array(
-        'product-view' => array(
-            'template' => 'product-view',
-            'variables' => array('title' => '', 'contents' => array())
-        ),
-    );
+function csm_menu() {
+  $query = "select nid from node where type='menu'";
+  $records = db_query($query);
+  $items = array();
+  $page_arguments = array();
+  foreach ($records as $record) {
+	$node = node_load($record->nid);
+	if (!empty($node->field_page_arguments['und'])) {
+	  $page_arguments = explode(",", $node->field_page_arguments['und'][0]['value']);
+	}
+	$items[$node->field_url['und'][0]['value']] = array(
+	  'title' => $node->title,
+	  'access callback' => TRUE,
+	  'page callback' => $node->field_page_callback['und'][0]['value'],
+	  'page arguments' => $page_arguments,
+	  'file' => $node->field_file['und'][0]['value'],
+	);
+  }
+  return $items;
 }
 
-function colubris_menu_alter(&$items) {
-    // Removing certain local navigation tabs that are either undesired or need to be custom relocated.
+function csm_theme() {
+  return array(
+	'product-view' => array(
+	  'template' => 'product-view',
+	  'variables' => array('title' => '', 'contents' => array())
+	),
+	'product_node_form' => array(
+	  'render element' => 'form',
+	  'template' => 'product-node-form',
+	  'path' => 'sites/all/modules/custom/csm'
+	),
+  );
+}
 
-    // Set these tabs to MENU_CALLBACK, so they still register the path, but just don't show the tab:
-    $items['node/%node/edit']['type'] = MENU_CALLBACK;
-    $items['node/%node/moderation']['type'] = MENU_CALLBACK;
-    $items['node/%node']['type'] = MENU_CALLBACK;
+function csm_menu_alter(&$items) {
+  // Removing certain local navigation tabs that are either undesired or need to be custom relocated.
 
+  // Set these tabs to MENU_CALLBACK, so they still register the path, but just don't show the tab:
+  $items['node/%node/edit']['type'] = MENU_CALLBACK;
+  $items['node/%node/moderation']['type'] = MENU_CALLBACK;
+  $items['node/%node']['type'] = MENU_CALLBACK;
+
+
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function csm_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  if($user->uid==1){
+	return;
+  }
+  $titleids = array(
+	"product_settings_node_form",
+	"colubris_avpair_settings_node_form",
+	"service_instance_node_form"
+  ); #hide title for these
+  $productids = array(
+	"product_settings_node_form",
+	"colubris_avpair_settings_node_form"
+  ); #hide product for these
+  if(in_array($form_id,$titleids)){
+	$form["title"]['#access'] = 0;
+  }
+  if(in_array($form_id,$productids)){
+
+	if(empty($_POST)){
+	  $pattern = '/[0-9]+$/';
+	  $result = preg_match($pattern, $_SERVER['HTTP_REFERER'],$matches);
+	  $form['pid'] = array(
+		'#type' => 'hidden',
+		'#default_value' => $matches[0],
+	  );
+	}
+	$form["field_product"]['#access'] = 0;
+
+	$form['#validate'][] = 'csm_'.$form_id.'_validate';
+  }
+
+
+}
+
+
+function csm_product_settings_node_form_validate(&$form, &$form_state){
+
+  $pid=$_POST["pid"];
+  $form_state['values']['field_product']['und']['0']['target_id'] = $pid;
+
+}
+
+function csm_colubris_avpair_settings_node_form_validate(&$form, &$form_state){
+
+  $pid=$_POST["pid"];
+  $form_state['values']['field_product']['und']['0']['target_id'] = $pid;
+
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function csm_page_alter(&$page) {
 
 }

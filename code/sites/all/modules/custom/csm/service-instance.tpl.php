@@ -30,7 +30,7 @@ if(!$product){
 <div class="row">
     <div class="col-md-12">
         <iframe class="view" name="view" src="<?php echo $base_url; ?>/product/<?php echo $nid; ?>" width="100%"
-                height="800px"
+                height="400px"
                 style="border-width:0px;"></iframe>
     </div>
 </div>
