@@ -79,7 +79,7 @@ function csm_form_alter(&$form, &$form_state, $form_id) {
 	else{
 	$form['pid'] = array(
 		'#type' => 'hidden',
-		'#default_value' => $_POST['pid'],
+		'#default_value' => $POST['pid'],
 	  );
 }
 	$form["field_product"]['#access'] = 0;
