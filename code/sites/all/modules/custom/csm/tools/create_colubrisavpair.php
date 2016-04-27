@@ -18,14 +18,12 @@ function create_attribute($line)
     $child->status = 1; //(1 or 0): published or not
     $child->promote = 0; //(1 or 0): promoted to front page
     $child->comment = 0; // 0 = comments disabled, 1 = read only, 2 = read/write
-    $child->field_category['und'][0]['value'] = 'User';
-    $child->field_vendor['und'][0]['value'] = "HP";
+    $child->field_category['und'][0]['value'] = $data[1];
+    $child->field_vendor['und'][0]['value'] =  $data[2];
+    $child->field_field_description['und'][0]['value'] = $data[3];
     $child = node_submit($child); // Prepare node for saving
     node_save($child);
-
-
 }
-
 
 $filename="sites/all/modules/custom/colubris/tools/data/colubris_avpair.csv";
 $filearray = file($filename);
